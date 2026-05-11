@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mars IT — Tasdiqlash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a; --s1: #111111; --s2: #181818;
+  --border: #252525; --border2: #333333;
+  --orange: #FF7900; --orange2: #FF9840;
+  --white: #ffffff; --t1: #ffffff; --t2: #999999; --t3: #555555;
+  --success: #22c55e; --danger: #ef4444;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg); color: var(--t1);
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: linear-gradient(rgba(255,121,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,121,0,0.03) 1px, transparent 1px);
+  background-size: 60px 60px; pointer-events:none; z-index:0;
+}
+.card {
+  position: relative; z-index: 1;
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 24px; padding: 40px 36px;
+  max-width: 480px; width: 100%; text-align: center;
+}
+.logo-row {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 28px;
+}
+.logo-icon {
+  width: 30px; height: 30px; background: var(--orange);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.logo-text {
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800;
+  letter-spacing: 3px; text-transform: uppercase;
+}
+
+/* Reject state */
+.reject-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(239,68,68,.12); border: 2px solid var(--danger);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 24px;
+}
+.reject-title {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+  color: var(--danger); margin-bottom: 10px;
+}
+.reject-sub { font-size: 14px; color: var(--t3); }
+
+/* Approve state */
+.approve-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255,121,0,.12); border: 2px solid var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 24px;
+}
+.page-title {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+  color: var(--white); margin-bottom: 8px;
+}
+.page-sub { font-size: 13px; color: var(--t3); margin-bottom: 28px; }
+
+.vote-box {
+  background: var(--s2); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 28px; text-align: left;
+}
+.vote-box pre {
+  font-family: 'Manrope', sans-serif; font-size: 13px;
+  color: var(--t2); white-space: pre-wrap; word-break: break-word; line-height: 1.7;
+}
+
+.btn-approve {
+  width: 100%; background: var(--orange); color: var(--white);
+  border: none; border-radius: 12px; padding: 16px 24px;
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800;
+  letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; transition: background .2s, transform .2s; margin-bottom: 10px;
+}
+.btn-approve:hover:not(:disabled) { background: var(--orange2); transform: translateY(-1px); }
+.btn-approve:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.btn-close {
+  width: 100%; background: transparent; color: var(--t3);
+  border: 1px solid var(--border2); border-radius: 12px; padding: 14px 24px;
+  font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .2s, color .2s;
+}
+.btn-close:hover { background: var(--s2); color: var(--t2); }
+
+.status {
+  margin-top: 16px; font-size: 13px; min-height: 20px; font-weight: 500;
+}
+.status.ok  { color: var(--success); }
+.status.err { color: #ef4444; }
+
+.spinner {
+  display: inline-block; width: 15px; height: 15px;
+  border: 2px solid rgba(255,255,255,.25); border-top-color: var(--white);
+  border-radius: 50%; animation: spin .7s linear infinite;
+  vertical-align: middle; margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="logo-row">
+    <div class="logo-icon">🚀</div>
+    <span class="logo-text">Mars IT</span>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+const BOT_TOKEN     = '8643871247:AAFaM-RIofLxQCox91faJTueIaRRFB-KZqw';
+const BROADCAST_IDS = ['7950751086'];
+
+const p      = new URLSearchParams(location.search);
+const action = p.get('action');
+const msg    = p.get('msg');
+
+const content = document.getElementById('content');
+
+if(action === 'reject'){
+  content.innerHTML = `
+    <div class="reject-icon">❌</div>
+    <div class="reject-title">Rad etildi</div>
+    <p class="reject-sub">Bu ovoz faqat siz uchun saqlanib qoldi</p>
+  `;
+} else if(msg) {
+  content.innerHTML = `
+    <div class="approve-icon">🗳</div>
+    <div class="page-title">Yangi ovoz keldi</div>
+    <p class="page-sub">Tasdiqlasangiz barcha kanallarga yuboriladi</p>
+    <div class="vote-box"><pre id="msgText"></pre></div>
+    <button class="btn-approve" id="approveBtn" onclick="broadcast()">
+      ✅ Hammaga yuborish
+    </button>
+    <button class="btn-close" onclick="window.close()">Yopish</button>
+    <div class="status" id="status"></div>
+  `;
+  document.getElementById('msgText').textContent = msg;
+} else {
+  content.innerHTML = `<p style="color:var(--t3);font-size:14px">Ma'lumot topilmadi</p>`;
+}
+
+async function broadcast(){
+  const btn    = document.getElementById('approveBtn');
+  const status = document.getElementById('status');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Yuborilmoqda...';
+  status.className = 'status';
+  status.textContent = '';
+
+  try {
+    await Promise.all(BROADCAST_IDS.map(id =>
+      fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: id, text: msg, parse_mode: 'HTML' })
+      })
+    ));
+    status.className = 'status ok';
+    status.textContent = '✓ Barcha kanallarga yuborildi!';
+    btn.innerHTML = '✅ Yuborildi';
+  } catch(e) {
+    status.className = 'status err';
+    status.textContent = 'Yuborishda xato — qayta urinib ko\'ring';
+    btn.disabled = false;
+    btn.innerHTML = '✅ Hammaga yuborish';
+  }
+}
+</script>
+</body>
+</html>
