@@ -188,6 +188,37 @@ body::before {
 .input-msg.ok  { color: var(--success); }
 .input-msg.err { color: #ff5555; }
 
+/* ── WARNING BLOCK ── */
+.tg-warning {
+  background: rgba(255,121,0,.08);
+  border: 1px solid rgba(255,121,0,.3);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.tg-warning-title {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 13px; color: var(--orange2);
+  margin-bottom: 10px;
+}
+.tg-warning-title svg { flex-shrink: 0; }
+.tg-warning-text {
+  font-size: 12.5px; color: var(--t2); line-height: 1.6;
+  margin-bottom: 14px;
+}
+.tg-warning-text strong { color: #ff5555; }
+.tg-checkbox-row {
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+}
+.tg-checkbox-row input[type="checkbox"] {
+  width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px;
+  accent-color: var(--orange); cursor: pointer;
+}
+.tg-checkbox-label {
+  font-size: 12.5px; color: var(--t1); font-weight: 600; line-height: 1.5;
+  cursor: pointer; user-select: none;
+}
+
 /* ── SECTION HEADING ── */
 .section-head {
   display: flex; align-items: center; gap: 14px;
@@ -399,12 +430,29 @@ body::before {
   <!-- USER SECTION -->
   <div class="user-card">
     <div class="card-label">Sizning ma'lumotingiz</div>
+
+    <!-- WARNING -->
+    <div class="tg-warning">
+      <div class="tg-warning-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Diqqat: Haqiqiy Telegram username kiriting
+      </div>
+      <div class="tg-warning-text">
+        Har bir ovoz tasdiqlanadi. <strong>Yolg'on yoki boshqa odamning username'ini kiritsangiz — ovozingiz bekor qilinadi.</strong>
+        Faqat o'zingizning haqiqiy Telegram username'ingiz yoki telefon raqamingizni yozing.
+      </div>
+      <label class="tg-checkbox-row">
+        <input type="checkbox" id="agreeCheck" onchange="onAgreeChange()"/>
+        <span class="tg-checkbox-label">Men haqiqiy Telegram foydalanuvchiman va o'z username'imni kiritaman</span>
+      </label>
+    </div>
+
     <div class="input-row">
       <div class="at-badge">@</div>
       <input type="text" class="uid-input" id="userInput"
         placeholder="telegram_username yoki +998901234567"
-        maxlength="40" autocomplete="off" spellcheck="false"/>
-      <button class="confirm-btn" id="confirmBtn" onclick="confirmUser()">Tasdiqlash</button>
+        maxlength="40" autocomplete="off" spellcheck="false" disabled/>
+      <button class="confirm-btn" id="confirmBtn" onclick="confirmUser()" disabled>Tasdiqlash</button>
     </div>
     <div class="input-hint">Har bir username yoki raqamdan faqat 1 ta ovoz qabul qilinadi</div>
     <div class="input-msg" id="userMsg"></div>
@@ -582,6 +630,14 @@ function tick(){
   document.getElementById('seconds').textContent = pad(Math.floor((d%60000)/1000));
 }
 tick(); setInterval(tick, 1000);
+
+// Agree checkbox
+function onAgreeChange(){
+  const agreed = document.getElementById('agreeCheck').checked;
+  document.getElementById('userInput').disabled  = !agreed;
+  document.getElementById('confirmBtn').disabled = !agreed;
+  if(agreed) document.getElementById('userInput').focus();
+}
 
 // Input filter
 document.getElementById('userInput').addEventListener('input', function(){
